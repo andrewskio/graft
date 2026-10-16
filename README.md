@@ -1,3 +1,3 @@
 # Graft
 
-Live reload: `watchexec -r -e go -- "go run ."s
+Live reload: `watchexec -r -e go -- "go run ."`
