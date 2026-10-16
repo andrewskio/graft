@@ -9,6 +9,10 @@ import (
 	"time"
 )
 
+func GetServerTypes() []string {
+	return []string{"Paper", "Fabric", "Neoforge", "Forge", "Vanilla"}
+}
+
 type MinecraftVersionDetails struct {
 	ID          string `json:"id"`
 	JavaVersion struct {
