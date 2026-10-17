@@ -1,7 +1,6 @@
 package config
 
 const (
-	GraftPath       = "/var/opt/graft"
 	JavaManifestURL = "https://raw.githubusercontent.com/itzg/docker-minecraft-server/refs/heads/master/images.json"
 	McManifestURL   = "https://launchermeta.mojang.com/mc/game/version_manifest.json"
 	DockerImage     = "itzg/minecraft-server"

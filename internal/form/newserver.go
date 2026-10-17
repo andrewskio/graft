@@ -2,43 +2,34 @@ package form
 
 import (
 	"fmt"
+	"graft/internal/manifest"
 	"graft/internal/util"
-	"graft/pkg/fetch"
 	"log/slog"
 	"strings"
 
-	"graft/internal/compose"
+	"graft/internal/composer"
 	"graft/internal/config"
 
 	"charm.land/huh/v2"
 )
 
-func Run() (*compose.ServerConf, error) {
-	fields := &compose.ServerConf{}
+func RunNewServerForm(mcManifest manifest.MinecraftManifest, javaManifest manifest.JavaManifest) (*composer.ServerConf, error) {
+	fields := &composer.ServerConf{}
 	fields.RecommendedJava = true
 
 	slog.Debug("Starting NewServer huh form")
 
-	mcManifest, err := fetch.FetchMinecraftManifest()
-	if err != nil {
-		return nil, err
-	}
 	mcVersions := mcManifest.GetStrList()
-
-	javaManifest, err := fetch.FetchJavaManifest()
-	if err != nil {
-		return nil, err
-	}
 	javaVersions := javaManifest.GetStrList()
 
-	err = huh.NewForm(
+	err := huh.NewForm(
 		huh.NewGroup(
 			huh.NewInput().
 				Title("Server Name").
 				Description("This will identify the folder name and container name. Must be 2-25 characters and alphanumeric, hyphen, and underscore only.").
 				Value(&fields.ServerName).
 				Validate(func(str string) error {
-					return util.ValidateSlug(str, "Server name")
+					return util.ValidateServerName(str)
 				}),
 			huh.NewInput().
 				Title("Minecraft Version").
@@ -77,7 +68,7 @@ func Run() (*compose.ServerConf, error) {
 				Value(&fields.RecommendedJava),
 			huh.NewSelect[string]().
 				Title("Java Version").
-				Description("Select java version.").
+				Description("Select java version. Latest/stable will be subject to change, but is a good idea if you use `latest` minecraft version.").
 				Value(&fields.JavaVersion).
 				OptionsFunc(func() []huh.Option[string] {
 					slog.Debug("Running Java version selection OptionsFunc", "McVersion", fields.MinecraftVersion)
@@ -96,6 +87,16 @@ func Run() (*compose.ServerConf, error) {
 
 					return huh.NewOptions(matchedVersions...)
 				}, &fields),
+		),
+		huh.NewGroup(
+			huh.NewNote().
+				Title("Server Config").
+				DescriptionFunc(func() string {
+					str := fields.ToString()
+					str += "\nUse shift+tab to make any changes if necessary.\nBy confirming, you agree to accept Minecraft's EULA.\nhttps://www.minecraft.net/eula"
+					return str
+				}, &fields).
+				Next(true).NextLabel("Confirm"),
 		),
 	).WithShowHelp(true).Run()
 	if err != nil {

@@ -1,8 +1,10 @@
 package cmd
 
 import (
-	"graft/internal/compose"
 	"graft/internal/form"
+	"graft/internal/manifest"
+	"graft/internal/sys"
+	"graft/internal/util"
 
 	"github.com/spf13/cobra"
 )
@@ -14,16 +16,39 @@ var newCmd = &cobra.Command{
 	Long:  `Create new Minecraft server`,
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		serverConf, err := form.Run()
+		// fetch manifests
+		javaManifest, err := manifest.FetchJavaManifest()
 		if err != nil {
 			return err
 		}
+		mcManifest, err := manifest.FetchMinecraftManifest()
+		if err != nil {
+			return err
+		}
+
+		// launch new server tui form
+		serverConf, err := form.RunNewServerForm(mcManifest, javaManifest)
+		if err != nil {
+			return err
+		}
+
+		// composify from form configuration
 		newCompose := serverConf.NewCompose()
-		return compose.CreateComposeFile(newCompose)
+		composeBytes, err := newCompose.CreateComposeBytes()
+		if err != nil {
+			return err
+		}
+		composePath, err := sys.WriteServerCompose(serverConf.ServerName, composeBytes, false)
+		if err != nil {
+			return err
+		}
+
+		util.PrintGreen("New server compose written to ", composePath)
+
+		return nil
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(newCmd)
-
 }

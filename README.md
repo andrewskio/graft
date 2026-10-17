@@ -4,6 +4,10 @@ A lightweight Linux CLI/TUI tool for setting up and managing servers in Docker C
 
 **Why Graft?**
 
-    - Lightweight: Single Go binary with Docker Compose being the only dependency. Just install and use.
-    - Stateless: Graft works directly with Compose configurations. You can add existing servers or manually edit configuration without issue.
-    - Secure: No admin web interface/API by default, simply use SSH to prevent unnecessary exposure.
+- Lightweight: Single Go binary with Docker Compose being the only dependency. Just install and use.
+
+- Stateless: Graft works directly with Compose configurations. You can add existing servers or manually edit configuration without issue.
+
+- Secure: No admin web interface/API by default, simply use SSH to prevent unnecessary exposure.
+
+Server data is stored in `~/.local/share/graft`. To add an existing Compose server, simply move it into a subdirectory here (e.g., `~/.local/share/graft/mysrv/compose.yml`).

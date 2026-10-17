@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"graft/internal/sys"
 	"log/slog"
 	"os"
 
@@ -13,7 +14,14 @@ var rootCmd = &cobra.Command{
 	Use:   "graft",
 	Short: "Simple Minecraft server management CLI built around docker-compose",
 	Long:  `Simple Minecraft server management CLI built around docker-compose`,
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		// Create graft dir if non existent
+		err := sys.CreateGraftDir()
+		if err != nil {
+			return err
+		}
+
+		// Init logging if enabled
 		if Log {
 			file, err := os.OpenFile("debug.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 			if err == nil {
@@ -23,7 +31,10 @@ var rootCmd = &cobra.Command{
 				slog.SetDefault(slog.New(handler))
 				slog.Info("LOGGING INITIALIZED")
 			}
+			return err
 		}
+
+		return nil
 	},
 }
 
@@ -37,5 +48,5 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().BoolVarP(&Log, "log", "l", false, "Enable logging to debug.log file")
+	rootCmd.PersistentFlags().BoolVarP(&Log, "log", "l", false, "Enable logging to debug.log file in Graft directory")
 }

@@ -1,6 +1,8 @@
 package main
 
-import "graft/cmd"
+import (
+	"graft/cmd"
+)
 
 func main() {
 	cmd.Execute()

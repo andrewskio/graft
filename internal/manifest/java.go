@@ -1,4 +1,4 @@
-package fetch
+package manifest
 
 import (
 	"encoding/json"
