@@ -1,8 +1,8 @@
 package cmd
 
 import (
+	"graft/internal/compose"
 	"graft/internal/form"
-	"graft/internal/util"
 
 	"github.com/spf13/cobra"
 )
@@ -13,13 +13,13 @@ var newCmd = &cobra.Command{
 	Short: "Create new Minecraft server",
 	Long:  `Create new Minecraft server`,
 	Args:  cobra.NoArgs,
-	Run: func(cmd *cobra.Command, args []string) {
-		fields, err := form.Run()
+	RunE: func(cmd *cobra.Command, args []string) error {
+		serverConf, err := form.Run()
 		if err != nil {
-			util.PrintRed(err.Error())
+			return err
 		}
-		util.PrintGreen(fields.JavaVersion)
-
+		newCompose := serverConf.NewCompose()
+		return compose.CreateComposeFile(newCompose)
 	},
 }
 

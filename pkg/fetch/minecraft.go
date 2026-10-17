@@ -3,15 +3,12 @@ package fetch
 import (
 	"encoding/json"
 	"errors"
+	"graft/internal/config"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
 )
-
-func GetServerTypes() []string {
-	return []string{"Paper", "Fabric", "Neoforge", "Forge", "Vanilla"}
-}
 
 type MinecraftVersionDetails struct {
 	ID          string `json:"id"`
@@ -36,10 +33,8 @@ type MinecraftManifest struct {
 }
 
 func FetchMinecraftManifest() (MinecraftManifest, error) {
-	manifestUrl := "https://launchermeta.mojang.com/mc/game/version_manifest.json"
-
 	// fetch manifest
-	resp, err := http.Get(manifestUrl)
+	resp, err := http.Get(config.McManifestURL)
 	if err != nil {
 		return MinecraftManifest{}, err
 	}
@@ -54,6 +49,7 @@ func FetchMinecraftManifest() (MinecraftManifest, error) {
 }
 
 func (mcm MinecraftManifest) FetchVersionDetails(mcVersion string) (MinecraftVersionDetails, error) {
+	mcVersion = strings.ToUpper(mcVersion)
 
 	if mcVersion == "LATEST" {
 		mcVersion = mcm.Latest.Release
@@ -65,7 +61,7 @@ func (mcm MinecraftManifest) FetchVersionDetails(mcVersion string) (MinecraftVer
 
 	versionURL := ""
 	for _, version := range mcm.Versions {
-		if version.ID == mcVersion {
+		if strings.ToUpper(version.ID) == mcVersion {
 			versionURL = version.URL
 		}
 	}
@@ -96,14 +92,14 @@ func (mcm MinecraftManifest) GetStrList() []string {
 }
 
 // Take minecraft manifest version and returns compatible java versions
-func (mcv MinecraftVersionDetails) GetJavaVersions(javaVersionList []string) []string {
+func (mcv MinecraftVersionDetails) GetJavaVersions(jManifest JavaManifest) []string {
 	matchedJavaVersions := []string{}
 
 	targetJavaVersion := strconv.Itoa(mcv.JavaVersion.MajorVersion)
 
-	for _, jv := range javaVersionList {
-		if strings.Contains(jv, targetJavaVersion) {
-			matchedJavaVersions = append(matchedJavaVersions, jv)
+	for _, jv := range jManifest {
+		if strings.Contains(jv.Java, targetJavaVersion) {
+			matchedJavaVersions = append(matchedJavaVersions, jv.Tag)
 		}
 	}
 

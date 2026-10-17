@@ -2,6 +2,7 @@ package fetch
 
 import (
 	"encoding/json"
+	"graft/internal/config"
 	"net/http"
 )
 
@@ -18,9 +19,7 @@ type JavaManifest []struct {
 }
 
 func FetchJavaManifest() (JavaManifest, error) {
-	javaVersionListURL := "https://raw.githubusercontent.com/itzg/docker-minecraft-server/refs/heads/master/images.json"
-
-	resp, err := http.Get(javaVersionListURL)
+	resp, err := http.Get(config.JavaManifestURL)
 	if err != nil {
 		return JavaManifest{}, err
 	}

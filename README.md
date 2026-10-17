@@ -1,6 +1,6 @@
 # Graft
 
-A lightweight CLI/TUI tool for setting up and managing servers in Docker Compose.
+A lightweight Linux CLI/TUI tool for setting up and managing servers in Docker Compose. 
 
 **Why Graft?**
 

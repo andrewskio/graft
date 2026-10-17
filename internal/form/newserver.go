@@ -4,22 +4,20 @@ import (
 	"fmt"
 	"graft/internal/util"
 	"graft/pkg/fetch"
+	"log/slog"
 	"strings"
+
+	"graft/internal/compose"
+	"graft/internal/config"
 
 	"charm.land/huh/v2"
 )
 
-type Fields struct {
-	ServerName       string
-	ServerType       string
-	MinecraftVersion string
-	JavaVersion      string
-	RecommendedJava  bool
-}
-
-func Run() (*Fields, error) {
-	fields := &Fields{}
+func Run() (*compose.ServerConf, error) {
+	fields := &compose.ServerConf{}
 	fields.RecommendedJava = true
+
+	slog.Debug("Starting NewServer huh form")
 
 	mcManifest, err := fetch.FetchMinecraftManifest()
 	if err != nil {
@@ -42,14 +40,6 @@ func Run() (*Fields, error) {
 				Validate(func(str string) error {
 					return util.ValidateSlug(str, "Server name")
 				}),
-			huh.NewSelect[string]().
-				Title("Server Type").
-				Description("Type of server. For vanilla servers, Paper is recommended for performance and supports Bukkit/Spigot plugins.").
-				Value(&fields.ServerType).
-				Options(huh.NewOptions(fetch.GetServerTypes()...)...),
-		),
-
-		huh.NewGroup(
 			huh.NewInput().
 				Title("Minecraft Version").
 				Description("Enter version (e.g., LATEST, SNAPSHOT, 26.2, 1.21.1)").
@@ -63,6 +53,24 @@ func Run() (*Fields, error) {
 					}
 					return fmt.Errorf("Version '%s' not found.", str)
 				}),
+		),
+		huh.NewGroup(
+			huh.NewSelect[string]().
+				Title("Server Type").
+				Description("Type of server. For vanilla servers, Paper is recommended for performance and supports Bukkit/Spigot plugins.").
+				Value(&fields.ServerType).
+				Options(huh.NewOptions(config.GetServerTypes()...)...),
+			huh.NewInput().
+				Title("Memory").
+				Description("Amount of RAM to assign to server. (1G, 500MB, etc.)").
+				Value(&fields.Memory).
+				Validate(func(s string) error {
+					return util.ValidateJVMMemory(s)
+				}),
+		),
+
+		huh.NewGroup(
+
 			huh.NewConfirm().
 				Title("Recommended Java").
 				Description("Show only recommened Java versions").
@@ -71,8 +79,8 @@ func Run() (*Fields, error) {
 				Title("Java Version").
 				Description("Select java version.").
 				Value(&fields.JavaVersion).
-				Height(6).
 				OptionsFunc(func() []huh.Option[string] {
+					slog.Debug("Running Java version selection OptionsFunc", "McVersion", fields.MinecraftVersion)
 					if !fields.RecommendedJava {
 						return huh.NewOptions(javaVersions...)
 					}
@@ -81,7 +89,7 @@ func Run() (*Fields, error) {
 					if err != nil {
 						return huh.NewOptions(javaVersions...)
 					}
-					matchedVersions := versionDetails.GetJavaVersions(javaVersions)
+					matchedVersions := versionDetails.GetJavaVersions(javaManifest)
 					if len(matchedVersions) == 0 {
 						return huh.NewOptions(javaVersions...)
 					}
