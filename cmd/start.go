@@ -21,14 +21,14 @@ var startCmd = &cobra.Command{
 			return err
 		}
 
-		project, err := service.LoadServerProject(srvName)
+		container, err := service.GetServerContainer(srvName)
 		if err != nil {
 			return err
 		}
 
 		cmd.Println(render.Success("Executing Docker start\n"))
 
-		err = service.Start(project)
+		err = container.Start()
 		if err != nil {
 			return err
 		}

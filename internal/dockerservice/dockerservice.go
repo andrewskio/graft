@@ -58,36 +58,27 @@ func NewComposeService(ctx context.Context, stdout io.Writer, stderr io.Writer) 
 	}, nil
 }
 
-// LoadServerProject finds the compose for srvName and returns a ComposeProject.
+// LoadServerProject finds the compose for srvName and returns a Container.
 // Returns non-nil error if server does not exist or could not be loaded.
-func (c ComposeService) LoadServerProject(srvName string) (*ComposeProject, error) {
+func (c ComposeService) GetServerContainer(srvName string) (Container, error) {
 	srv, err := server.LoadServer(srvName)
 	if err != nil {
-		return nil, err
+		return Container{}, err
 	}
 
 	compPath, err := srv.GetComposePath()
 	if err != nil {
-		return nil, err
+		return Container{}, err
 	}
 
 	project, err := c.service.LoadProject(c.ctx, api.ProjectLoadOptions{
 		ConfigPaths: []string{compPath},
 	})
 	if err != nil {
-		return nil, err
+		return Container{}, err
 	}
-	return project, nil
-}
-
-func (c ComposeService) Start(project *ComposeProject) error {
-	return c.service.Up(c.ctx, project, api.UpOptions{
-		Create: api.CreateOptions{},
-		Start:  api.StartOptions{},
-	})
-
-}
-
-func (c ComposeService) Stop(project *ComposeProject) error {
-	return c.service.Stop(c.ctx, project.Name, api.StopOptions{})
+	return Container{
+		ComposeService: &c,
+		project:        project,
+	}, nil
 }

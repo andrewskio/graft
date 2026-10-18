@@ -1,12 +1,9 @@
 package cmd
 
 import (
+	"graft/internal/cli/render"
 	"graft/internal/server"
 
-	"fmt"
-
-	"charm.land/lipgloss/v2"
-	"charm.land/lipgloss/v2/table"
 	"github.com/spf13/cobra"
 )
 
@@ -21,17 +18,13 @@ var listCmd = &cobra.Command{
 			return err
 		}
 
-		t := table.New().
-			Border(lipgloss.NormalBorder()).
-			BorderRow(true).
-			BorderStyle(lipgloss.NewStyle().Foreground(lipgloss.Color("238"))).
-			Headers("Name", "Type", "Version", "Java")
-
-		for _, c := range srvConfs {
-			t.Row(c.ServerName, c.ServerType, c.MinecraftVersion, c.JavaVersion)
-		}
-
-		fmt.Println(t.Render())
+		cmd.Println(render.Table(
+			[]string{"Name", "Type", "Version", "Java"},
+			srvConfs,
+			func(s server.Server) []string {
+				return []string{s.ServerName, s.ServerType, s.MinecraftVersion, s.JavaVersion}
+			},
+		))
 
 		return nil
 	},

@@ -22,12 +22,12 @@ var stopCmd = &cobra.Command{
 
 		cmd.Println(render.Success("Executing Docker stop\n"))
 
-		project, err := service.LoadServerProject(srvName)
+		container, err := service.GetServerContainer(srvName)
 		if err != nil {
 			return err
 		}
 
-		err = service.Stop(project)
+		err = container.Stop()
 		if err != nil {
 			return err
 		}

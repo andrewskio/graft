@@ -9,6 +9,7 @@ import (
 	"image/color"
 
 	"charm.land/lipgloss/v2"
+	"charm.land/lipgloss/v2/table"
 )
 
 var (
@@ -33,4 +34,36 @@ func Error(format string, a ...any) string {
 
 func Warning(format string, a ...any) string {
 	return renderText(yellow, fmt.Sprintf(format, a...))
+}
+
+/*
+Table creates a rendered Table from a list of headers (strings), a list of
+items of any type, and a callback mapping those item's fields to a list of strings
+
+Example:
+
+```
+
+	render.Table(
+		[]string{"Name", "Type"},
+		srvConfs,
+		func(s server.Server) []string {
+			return []string{s.ServerName, s.ServerType}
+		},
+	)
+
+```
+*/
+func Table[T any](headers []string, items []T, mapRow func(T) []string) string {
+	t := table.New().
+		Border(lipgloss.NormalBorder()).
+		BorderRow(true).
+		BorderStyle(lipgloss.NewStyle().Foreground(lipgloss.Color("238"))).
+		Headers(headers...)
+
+	for _, item := range items {
+		t.Row(mapRow(item)...)
+	}
+
+	return t.Render()
 }
