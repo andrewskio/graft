@@ -2,9 +2,10 @@ package cmd
 
 import (
 	"context"
-	"graft/internal/sys"
+	"graft/internal/graftfs"
 	"log/slog"
 	"os"
+	"path/filepath"
 
 	"charm.land/fang/v2"
 	"github.com/spf13/cobra"
@@ -16,14 +17,15 @@ var rootCmd = &cobra.Command{
 	Long:  `Simple Minecraft server management CLI built around docker-compose`,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		// Create graft dir if non existent
-		err := sys.CreateGraftDir()
+		graftDir, err := graftfs.CreateGraftDir()
 		if err != nil {
 			return err
 		}
 
 		// Init logging if enabled
 		if Log {
-			file, err := os.OpenFile("debug.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+			logFilePath := filepath.Join(graftDir, "debug.log")
+			file, err := os.OpenFile(logFilePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 			if err == nil {
 				handler := slog.NewTextHandler(file, &slog.HandlerOptions{
 					Level: slog.LevelDebug,

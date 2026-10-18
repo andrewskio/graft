@@ -2,7 +2,7 @@ package util
 
 import (
 	"fmt"
-	"graft/internal/sys"
+	"graft/internal/graftfs"
 	"regexp"
 )
 
@@ -30,7 +30,7 @@ func ValidateServerName(srvName string) error {
 		return fmt.Errorf("Server name cannot start or end with hyphens or underscores.")
 	}
 
-	srvExists, err := sys.DoesServerPathExist(srvName)
+	srvExists, err := graftfs.DoesServerPathExist(srvName)
 	if err != nil {
 		return fmt.Errorf("Unknown error occured checking path: %s", err)
 	}

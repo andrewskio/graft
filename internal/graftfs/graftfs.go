@@ -1,4 +1,4 @@
-package sys
+package graftfs
 
 import (
 	"errors"
@@ -24,7 +24,7 @@ func doesPathExist(path string) (bool, error) {
 }
 
 // createNewDir creates a new directory at absolute path if it does not exist.
-// Returns a non-nil error if the path could not be read or already exists.
+// Returns a non-nil error if the path could not be read.
 func createNewDir(path string) error {
 	slog.Debug("Creating new path", "path", path)
 	pathExists, err := doesPathExist(path)
@@ -54,14 +54,14 @@ func GetGraftDir() (string, error) {
 	return filepath.Join(homeDir, ".local", "share", "graft"), nil
 }
 
-// CreateGraftDir() creates the graft directory if it does not exist,
+// CreateGraftDir() creates the graft directory if it does not exist and returns the path,
 // returning a non-nil error if any errors occured.
-func CreateGraftDir() error {
+func CreateGraftDir() (string, error) {
 	graftDir, err := GetGraftDir()
 	if err != nil {
-		return err
+		return graftDir, err
 	}
-	return createNewDir(graftDir)
+	return graftDir, createNewDir(graftDir)
 }
 
 // GetServerPath(srvName) returns the absolute path for a server's directory, or an error if the home directory could not be resolved.
@@ -71,7 +71,7 @@ func GetServerPath(srvName string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(graftDir, srvName), nil
+	return filepath.Join(graftDir, "servers", srvName), nil
 }
 
 // DoesServerPath(srvName) checks if a path exists for given server name.
@@ -110,6 +110,41 @@ func CreateServerDir(srvName string) (string, error) {
 	return serverPath, nil
 }
 
+// EnumerateServerNames() finds all server paths within the Graft directory
+// and returns the names of servers with a compose.yml.
+func EnumerateServerNames() ([]string, error) {
+	serverNames := []string{}
+
+	rootDir, err := GetGraftDir()
+	if err != nil {
+		return serverNames, err
+	}
+
+	entries, err := os.ReadDir(filepath.Join(rootDir, "servers"))
+	if err != nil {
+		return serverNames, err
+	}
+	if len(entries) == 0 {
+		return serverNames, nil
+	}
+
+	for _, entry := range entries {
+		srvPath, err := GetServerPath(entry.Name())
+		if err != nil {
+			return serverNames, err
+		}
+		composeExists, err := doesPathExist(filepath.Join(srvPath, "compose.yml"))
+		if err != nil {
+			return serverNames, err
+		}
+		if composeExists {
+			serverNames = append(serverNames, entry.Name())
+		}
+	}
+
+	return serverNames, nil
+}
+
 // WriteServerCompose creates a server path (if non-existent) writes the yamlData to compose.yaml for a server srvName.
 // Returns the path of the compose file and an error.
 // When allowOverwrite is false, it will return a non-nil error if the file already exists.
@@ -137,4 +172,19 @@ func WriteServerCompose(srvName string, yamlData []byte, allowOverwrite bool) (s
 	}
 	return composePath, nil
 
+}
+
+func ReadServerCompose(srvName string) ([]byte, error) {
+	srvDir, err := GetServerPath(srvName)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	composePath := filepath.Join(srvDir, "compose.yml")
+	data, err := os.ReadFile(composePath)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	return data, nil
 }

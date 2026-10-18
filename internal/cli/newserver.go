@@ -1,4 +1,4 @@
-package form
+package cli
 
 import (
 	"fmt"
@@ -7,14 +7,14 @@ import (
 	"log/slog"
 	"strings"
 
-	"graft/internal/composer"
 	"graft/internal/config"
+	"graft/internal/server"
 
 	"charm.land/huh/v2"
 )
 
-func RunNewServerForm(mcManifest manifest.MinecraftManifest, javaManifest manifest.JavaManifest) (*composer.ServerConf, error) {
-	fields := &composer.ServerConf{}
+func RunNewServerForm(mcManifest manifest.MinecraftManifest, javaManifest manifest.JavaManifest) (*server.ServerConf, error) {
+	fields := &server.ServerConf{}
 	fields.RecommendedJava = true
 
 	slog.Debug("Starting NewServer huh form")

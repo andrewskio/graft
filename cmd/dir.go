@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"graft/internal/sys"
+	"graft/internal/graftfs"
 
 	"github.com/spf13/cobra"
 )
@@ -11,10 +11,10 @@ import (
 // dirCmd represents the dir command
 var dirCmd = &cobra.Command{
 	Use:   "dir",
-	Short: "Simple utility command to print path that Graft saves servers.",
-	Long:  "Simple utility command to print path that Graft saves servers.",
+	Short: "Simple utility command to print path that Graft saves servers",
+	Long:  "Simple utility command to print path that Graft saves servers",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		path, err := sys.GetGraftDir()
+		path, err := graftfs.GetGraftDir()
 		if err != nil {
 			return err
 		}
