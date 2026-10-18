@@ -1,3 +1,9 @@
+/*
+The compose package contains the Compose type, and helpers to
+Marshal and Unmarshal to and from a compose.yml. The Compose type
+internally represents a compose.yml file, and should be converted to and from
+a Server type for use. (see server.FromCompose(compose))
+*/
 package compose
 
 import (
@@ -23,6 +29,7 @@ type Service struct {
 // Compose is the primary struct that represents a compose.yaml file.
 // Used for unmarshalling/marshalling to YAML
 type Compose struct {
+	Name     string             `yaml:"name"`
 	Services map[string]Service `yaml:"services"`
 }
 

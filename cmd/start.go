@@ -1,12 +1,8 @@
 package cmd
 
 import (
-	"context"
-	"fmt"
-	"graft/internal/cli"
-	"graft/internal/docker"
-	"graft/internal/graftfs"
-	"path/filepath"
+	"graft/internal/cli/render"
+	"graft/internal/dockerservice"
 
 	"github.com/spf13/cobra"
 )
@@ -20,27 +16,24 @@ var startCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		srvName := args[0]
 
-		serverPathExists, err := graftfs.DoesServerPathExist(srvName)
-		if err != nil {
-			return err
-		}
-		if !serverPathExists {
-			return fmt.Errorf("Server %s not found.", srvName)
-		}
-
-		srvPath, err := graftfs.GetServerPath(srvName)
+		service, err := dockerservice.NewComposeService(cmd.Context(), cmd.OutOrStdout(), cmd.OutOrStderr())
 		if err != nil {
 			return err
 		}
 
-		ctx := context.Background()
-
-		err = docker.StartService(ctx, filepath.Join(srvPath, "compose.yml"), srvName)
+		project, err := service.LoadServerProject(srvName)
 		if err != nil {
 			return err
 		}
 
-		cli.PrintGreen("Service started: ", srvName)
+		cmd.Println(render.Success("Executing Docker start\n"))
+
+		err = service.Start(project)
+		if err != nil {
+			return err
+		}
+
+		cmd.Println(render.Success("\nService started: %s", srvName))
 
 		return nil
 	},

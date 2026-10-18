@@ -1,3 +1,8 @@
+/*
+The manifest packages contains types that represent Minecraft
+and Java version manifests and helper methods to dynamically
+retrieve them.
+*/
 package manifest
 
 import (
@@ -66,7 +71,7 @@ func (mcm MinecraftManifest) FetchVersionDetails(mcVersion string) (MinecraftVer
 		}
 	}
 	if versionURL == "" {
-		return MinecraftVersionDetails{}, errors.New("Version URL not found in manifest")
+		return MinecraftVersionDetails{}, errors.New("version URL not found in manifest")
 	}
 
 	resp, err := http.Get(versionURL)

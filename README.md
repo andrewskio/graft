@@ -21,7 +21,7 @@ A lightweight Linux CLI/TUI tool for setting up and managing servers in Docker C
 3. Optionally, copy existing Compose Minecraft servers to Graft directory. 
 
     - Server data is stored in `~/.local/share/graft/servers`. To add an existing Compose server, simply move it into a subdirectory here (e.g., `~/.local/share/graft/servers/mysrv/compose.yml`). 
-    - Ensure the Minecraft server is the only service defined in the Compose file.
+    - Ensure the Minecraft server is the only service defined in the Compose file, and the Compose file starts with `name: [server_name]`
 
 4. Run `graft help` to get started. Optionally, run `graft ac` and restart your terminal to add completions.
 

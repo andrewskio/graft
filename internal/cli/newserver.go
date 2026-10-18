@@ -13,8 +13,8 @@ import (
 	"charm.land/huh/v2"
 )
 
-func RunNewServerForm(mcManifest manifest.MinecraftManifest, javaManifest manifest.JavaManifest) (*server.ServerConf, error) {
-	fields := &server.ServerConf{}
+func RunNewServerForm(mcManifest manifest.MinecraftManifest, javaManifest manifest.JavaManifest) (*server.Server, error) {
+	fields := &server.Server{}
 	fields.RecommendedJava = true
 
 	slog.Debug("Starting NewServer huh form")
@@ -42,7 +42,7 @@ func RunNewServerForm(mcManifest manifest.MinecraftManifest, javaManifest manife
 							return nil
 						}
 					}
-					return fmt.Errorf("Version '%s' not found.", str)
+					return fmt.Errorf("version '%s' not found", str)
 				}),
 		),
 		huh.NewGroup(

@@ -16,7 +16,7 @@ var listCmd = &cobra.Command{
 	Short:   "List all servers found in Graft directory",
 	Long:    `List all servers found in Graft directory`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		srvConfs, err := server.EnumerateServerConfs()
+		srvConfs, err := server.EnumerateServers()
 		if err != nil {
 			return err
 		}

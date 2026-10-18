@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"graft/internal/cli"
+	"graft/internal/cli/render"
 	"graft/internal/graftfs"
 	"graft/internal/manifest"
 
@@ -42,7 +43,7 @@ var newCmd = &cobra.Command{
 			return err
 		}
 
-		cli.PrintGreen("New server compose written to", composePath)
+		cmd.Println(render.Success("New server compose written to %s", composePath))
 
 		return nil
 	},

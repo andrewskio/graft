@@ -1,3 +1,8 @@
+/*
+The config page defines constant variables used throughout the program,
+such as manifest urls and server types.
+*/
+
 package config
 
 const (
