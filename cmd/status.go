@@ -2,31 +2,32 @@ package cmd
 
 import (
 	"graft/internal/cli/render"
-	"graft/internal/dockerservice"
 
 	"github.com/docker/compose/v5/pkg/api"
 	"github.com/spf13/cobra"
 )
 
 var statusCmd = &cobra.Command{
-	Use:   "status",
-	Short: "Print the status of given server.",
-	Long:  `Print the status of given server.`,
-	Args:  cobra.ExactArgs(1),
+	Use:   "status <server>",
+	Short: "Show the container status for a Minecraft server",
+	Long: `Display the Docker Compose container name, status, and state for the named server.
+The server name must match a configuration in the Graft server directory. If the
+server has not been started, Graft reports that no container status is available.`,
+	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		srvName := args[0]
 
-		service, err := dockerservice.NewComposeService(cmd.Context(), cmd.OutOrStdout(), cmd.OutOrStderr())
+		service, err := newComposeService(cmd)
 		if err != nil {
 			return err
 		}
 
-		container, err := service.GetServerContainer(srvName)
+		project, err := service.GetServerProject(srvName)
 		if err != nil {
 			return err
 		}
 
-		summaryList, err := container.Status()
+		summaryList, err := project.Status()
 		if err != nil {
 			return err
 		}
@@ -50,14 +51,4 @@ var statusCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(statusCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// statusCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// statusCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

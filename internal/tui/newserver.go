@@ -1,21 +1,27 @@
-package cli
+package tui
 
 import (
 	"fmt"
 	"graft/internal/manifest"
+	"graft/internal/server"
 	"graft/internal/util"
 	"log/slog"
 	"strings"
 
-	"graft/internal/config"
-	"graft/internal/server"
-
 	"charm.land/huh/v2"
 )
 
-func RunNewServerForm(mcManifest manifest.MinecraftManifest, javaManifest manifest.JavaManifest) (*server.Server, error) {
-	fields := &server.Server{}
-	fields.RecommendedJava = true
+type serverFormState struct {
+	server.Server
+	RecommendedJava bool
+}
+
+func (fields serverFormState) description() string {
+	return fmt.Sprintf("Server Name: %s\nServer Type: %s\nMinecraft Version: %s\nJava Version: %s\nMemory: %s", fields.ServerName, fields.ServerType, fields.MinecraftVersion, fields.JavaVersion, fields.Memory)
+}
+
+func RunNewServerForm(mcManifest manifest.MinecraftManifest, javaManifest manifest.JavaManifest, serverTypes []string, validateServerName func(string) error) (*server.Server, error) {
+	fields := &serverFormState{RecommendedJava: true}
 
 	slog.Debug("Starting NewServer huh form")
 
@@ -29,6 +35,9 @@ func RunNewServerForm(mcManifest manifest.MinecraftManifest, javaManifest manife
 				Description("This will identify the folder name and container name. Must be 2-25 characters and alphanumeric, hyphen, and underscore only.").
 				Value(&fields.ServerName).
 				Validate(func(str string) error {
+					if validateServerName != nil {
+						return validateServerName(str)
+					}
 					return util.ValidateServerName(str)
 				}),
 			huh.NewInput().
@@ -50,7 +59,7 @@ func RunNewServerForm(mcManifest manifest.MinecraftManifest, javaManifest manife
 				Title("Server Type").
 				Description("Type of server. For vanilla servers, Paper is recommended for performance and supports Bukkit/Spigot plugins.").
 				Value(&fields.ServerType).
-				Options(huh.NewOptions(config.GetServerTypes()...)...),
+				Options(huh.NewOptions(serverTypes...)...),
 			huh.NewInput().
 				Title("Memory").
 				Description("Amount of RAM to assign to server. (1G, 500MB, etc.)").
@@ -92,7 +101,7 @@ func RunNewServerForm(mcManifest manifest.MinecraftManifest, javaManifest manife
 			huh.NewNote().
 				Title("Server Config").
 				DescriptionFunc(func() string {
-					str := fields.ToString()
+					str := fields.description()
 					str += "\nUse shift+tab to make any changes if necessary.\nBy confirming, you agree to accept Minecraft's EULA.\nhttps://www.minecraft.net/eula"
 					return str
 				}, &fields).
@@ -102,5 +111,5 @@ func RunNewServerForm(mcManifest manifest.MinecraftManifest, javaManifest manife
 	if err != nil {
 		return nil, err
 	}
-	return fields, nil
+	return &fields.Server, nil
 }

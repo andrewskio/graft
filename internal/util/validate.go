@@ -2,14 +2,12 @@ package util
 
 import (
 	"fmt"
-	"graft/internal/graftfs"
 	"regexp"
 )
 
 /*
-ValidateServerName returns `nil` if string is between 2-25 characters, alphanumerica/hyphen/underscore only,
-doesn't start or end with hyphen/underscore, and isn't already in use, otherwie it returns an error.
-Primarily used to validate server name for its folder/service.
+ValidateServerName returns nil when srvName is 2-25 characters, contains only
+alphanumeric/hyphens/underscores, and doesn't end in hyphens/underscores.
 */
 func ValidateServerName(srvName string) error {
 	if len(srvName) < 2 {
@@ -19,31 +17,19 @@ func ValidateServerName(srvName string) error {
 		return fmt.Errorf("server name cannot be longer than 25 characters")
 	}
 
-	pattern := regexp.MustCompile(`^[\w-]+$`)
-	isValid := pattern.MatchString(srvName)
-	if !isValid {
+	if !regexp.MustCompile(`^[\w-]+$`).MatchString(srvName) {
 		return fmt.Errorf("server name must only contain aphanumeric, hyphens, and underscores")
 	}
 
-	pattern = regexp.MustCompile(`^[A-Za-z0-9](.*[A-Za-z0-9])?$`)
-	if !pattern.MatchString(srvName) {
+	if !regexp.MustCompile(`^[A-Za-z0-9](.*[A-Za-z0-9])?$`).MatchString(srvName) {
 		return fmt.Errorf("server name cannot start or end with hyphens or underscores")
 	}
-
-	srvExists, err := graftfs.DoesServerPathExist(srvName)
-	if err != nil {
-		return fmt.Errorf("unknown error occured checking path: %s", err)
-	}
-	if srvExists {
-		return fmt.Errorf("server name already in use")
-	}
-
 	return nil
 }
 
 /*
-ValidateJVMMemory takes a string and returns `nil` if the string is a valid JVM memory
-argument (1G, 500MB, etc.), otherwise returns an error.
+ValidateJVMMemory returns nil if the string is a valid JVM memory
+argument (1G, 500MB, etc.)
 */
 func ValidateJVMMemory(str string) error {
 	jvmMemRegex := regexp.MustCompile(`^(?i)\d+(?:\.\d+)?\s*[kmg]b?$`)

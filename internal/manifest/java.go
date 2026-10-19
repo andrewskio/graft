@@ -2,9 +2,10 @@ package manifest
 
 import (
 	"encoding/json"
-	"graft/internal/config"
 	"net/http"
 )
+
+const JavaManifestURL = "https://raw.githubusercontent.com/itzg/docker-minecraft-server/refs/heads/master/images.json"
 
 type JavaManifest []struct {
 	Tag           string   `json:"tag"`
@@ -19,7 +20,7 @@ type JavaManifest []struct {
 }
 
 func FetchJavaManifest() (JavaManifest, error) {
-	resp, err := http.Get(config.JavaManifestURL)
+	resp, err := http.Get(JavaManifestURL)
 	if err != nil {
 		return JavaManifest{}, err
 	}

@@ -1,6 +1,6 @@
 /*
 Package render contains utility commands for rending Lipgloss formatted
-strings to be printed, as well as a Writer for formatting streams.
+strings to be printed.
 */
 package render
 

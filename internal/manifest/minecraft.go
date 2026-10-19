@@ -1,19 +1,19 @@
 /*
-The manifest packages contains types that represent Minecraft
-and Java version manifests and helper methods to dynamically
-retrieve them.
+Package manifest contains types that represent Minecraft
+and Java version manifests and helper methods to retrieve them.
 */
 package manifest
 
 import (
 	"encoding/json"
 	"errors"
-	"graft/internal/config"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
 )
+
+const McManifestURL = "https://launchermeta.mojang.com/mc/game/version_manifest.json"
 
 type MinecraftVersionDetails struct {
 	ID          string `json:"id"`
@@ -39,7 +39,7 @@ type MinecraftManifest struct {
 
 func FetchMinecraftManifest() (MinecraftManifest, error) {
 	// fetch manifest
-	resp, err := http.Get(config.McManifestURL)
+	resp, err := http.Get(McManifestURL)
 	if err != nil {
 		return MinecraftManifest{}, err
 	}

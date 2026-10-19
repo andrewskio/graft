@@ -12,7 +12,12 @@ import (
 var addCompletionsCmd = &cobra.Command{
 	Use:     "add-completions",
 	Aliases: []string{"ac"},
-	Short:   "Automatically installs shell completions for the current user",
+	Short:   "Install Graft shell completions for the current user",
+	Long: `Generate and install Graft command completions for the shell reported by $SHELL.
+Supports Bash, Zsh, and Fish, and writes the completion script to the current user's
+standard completion directory. For Zsh, ensure ~/.zsh/completions is included in fpath.
+
+Use 'graft completion' to generate completion scripts manually for other shells.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		shell := os.Getenv("SHELL")
 		home, err := os.UserHomeDir()

@@ -2,33 +2,36 @@ package cmd
 
 import (
 	"graft/internal/cli/render"
-	"graft/internal/dockerservice"
 
 	"github.com/spf13/cobra"
 )
 
 // startCmd represents the start command
 var startCmd = &cobra.Command{
-	Use:   "start",
-	Short: "Start server",
-	Long:  ``,
-	Args:  cobra.ExactArgs(1),
+	Use:     "start <server>",
+	Aliases: []string{"up"},
+
+	Short: "Start a saved Minecraft server",
+	Long: `Start the Docker Compose project for the named server.
+The server name must match a configuration in the Graft server directory.
+The 'up' alias can be used instead of 'start'.`,
+	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		srvName := args[0]
 
-		service, err := dockerservice.NewComposeService(cmd.Context(), cmd.OutOrStdout(), cmd.OutOrStderr())
+		service, err := newComposeService(cmd)
 		if err != nil {
 			return err
 		}
 
-		container, err := service.GetServerContainer(srvName)
+		project, err := service.GetServerProject(srvName)
 		if err != nil {
 			return err
 		}
 
-		cmd.Println(render.Success("Executing Docker start\n"))
+		cmd.Println(render.Success("Executing Compose project up...\n"))
 
-		err = container.Start()
+		err = project.Start()
 		if err != nil {
 			return err
 		}
