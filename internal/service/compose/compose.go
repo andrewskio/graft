@@ -82,6 +82,8 @@ type Project struct {
 	Server  server.Server
 }
 
+type ContainerStatus = api.ContainerSummary
+
 // ServerName returns the managed server name.
 func (p *Project) ServerName() string { return p.name }
 
@@ -96,8 +98,15 @@ func (p *Project) Stop() error {
 }
 
 // Status returns the project's container summaries.
-func (p *Project) Status() ([]api.ContainerSummary, error) {
+func (p *Project) Status() ([]ContainerStatus, error) {
 	return p.service.api.Ps(p.service.ctx, p.project.Name, api.PsOptions{All: true})
+}
+
+func (p *Project) Logs(ctx context.Context, logConsumer api.LogConsumer) error {
+	return p.service.api.Logs(ctx, p.project.Name, logConsumer, api.LogOptions{
+		Follow: true,
+		Tail:   "1000",
+	})
 }
 
 // Attach attaches to the first service's console.

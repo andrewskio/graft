@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"graft/internal/cli/render"
+	"graft/internal/service/compose"
 
-	"github.com/docker/compose/v5/pkg/api"
 	"github.com/spf13/cobra"
 )
 
@@ -40,7 +40,7 @@ server has not been started, Graft reports that no container status is available
 		cmd.Println(render.Table(
 			[]string{"Name", "Status", "State"},
 			summaryList,
-			func(s api.ContainerSummary) []string {
+			func(s compose.ContainerStatus) []string {
 				return []string{s.Project, s.Status, string(s.State)}
 			},
 		))
