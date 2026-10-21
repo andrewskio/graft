@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"graft/internal/manifest"
 	"graft/internal/server"
+	"graft/internal/ui/style"
 	"graft/internal/util"
 	"log/slog"
 	"strings"
@@ -107,7 +108,7 @@ func RunNewServerForm(mcManifest manifest.MinecraftManifest, javaManifest manife
 				}, &fields).
 				Next(true).NextLabel("Confirm"),
 		),
-	).WithShowHelp(true).Run()
+	).WithTheme(style.HuhTheme).WithShowHelp(true).Run()
 	if err != nil {
 		return nil, err
 	}

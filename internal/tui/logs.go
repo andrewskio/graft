@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"graft/internal/ui/style"
+
 	"charm.land/bubbles/v2/viewport"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
@@ -60,7 +62,6 @@ type logModel struct {
 
 func newLogModel(title string) logModel {
 	view := viewport.New()
-	view.SoftWrap = true
 	return logModel{title: title, viewport: view}
 }
 
@@ -71,13 +72,16 @@ func (m logModel) Init() tea.Cmd {
 func (m logModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case logEntriesMsg:
-		// Apply a whole batch at once, retaining only recent history.
 		wasAtBottom := m.viewport.AtBottom()
 		m.entries = append(m.entries, msg...)
 		if len(m.entries) > maxLogEntries {
 			m.entries = append([]string(nil), m.entries[len(m.entries)-maxLogEntries:]...)
 		}
-		m.viewport.SetContent(strings.Join(m.entries, "\n"))
+
+		content := strings.Join(m.entries, "\n")
+		wrappedContent := lipgloss.NewStyle().Width(m.viewport.Width()).Render(content)
+		m.viewport.SetContent(wrappedContent)
+
 		if wasAtBottom {
 			m.viewport.GotoBottom()
 		}
@@ -88,7 +92,9 @@ func (m logModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, tea.Quit
 	case tea.WindowSizeMsg:
 		m.viewport.SetWidth(msg.Width)
-		m.viewport.SetHeight(max(1, msg.Height-2))
+		m.viewport.SetHeight(max(0, msg.Height-2))
+		content := strings.Join(m.entries, "\n")
+		m.viewport.SetContent(lipgloss.NewStyle().Width(msg.Width).Render(content))
 		m.viewport.GotoBottom()
 	case tea.BackgroundColorMsg:
 		m.darkBackground = msg.IsDark()
@@ -107,11 +113,14 @@ func (m logModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m logModel) View() tea.View {
 	footer := "q/ctrl+c quit  up/down scroll  pgup/pgdn page"
+	footerStyle := style.Description.Foreground(lipgloss.LightDark(m.darkBackground)(style.Muted, lipgloss.Color("#A1A1AA")))
+	titleStyle := style.Title.Foreground(lipgloss.LightDark(m.darkBackground)(style.Primary, lipgloss.Color("#A78BFA")))
 	if m.streamErr != nil {
 		footer = "log stream ended: " + m.streamErr.Error() + "  (q to quit)"
+		footerStyle = style.ErrorMessage.Foreground(lipgloss.LightDark(m.darkBackground)(style.Error, lipgloss.Color("#F87171")))
 	}
-	title := lipgloss.NewStyle().Bold(true).Render(m.title)
-	footer = lipgloss.NewStyle().Render(footer)
+	title := titleStyle.Render(m.title)
+	footer = footerStyle.Render(footer)
 	view := tea.NewView(fmt.Sprintf("%s\n%s\n%s", title, m.viewport.View(), footer))
 	view.AltScreen = true
 	return view
@@ -137,7 +146,6 @@ func RunLogViewer(ctx context.Context, title string, stream func(context.Context
 			if len(batch) == 0 {
 				return
 			}
-			// Send a copy because this goroutine reuses batch for the next group.
 			program.Send(logEntriesMsg(append([]string(nil), batch...)))
 			batch = batch[:0]
 		}
