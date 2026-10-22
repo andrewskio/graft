@@ -12,6 +12,15 @@ A lightweight Linux CLI/TUI tool for setting up and managing servers in Docker C
 
 - Secure: No admin web interface/API by default, simply use SSH to prevent unnecessary exposure.
 
+## Basic Usage
+
+- `graft new` - Launch interactive TUI to create new server
+- `graft ls` - List servers and respective container status
+- `graft start/stop <server>` - Start/stop the container for a server
+- `graft console <server>` - Send commands to the server console
+- `graft log <server>` - Scrolling log viewer to view console logs
+- `graft status <server>` - Print the current status of a server container
+
 ## Install From Source
 
 1. Install go, docker, and docker compose. Add user to docker group.
